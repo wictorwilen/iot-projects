@@ -1,6 +1,6 @@
 # Video Light
 
-Read full instructions at []().
+Read full instructions at [Building a smart video light](https://www.wictorwilen.se/blog/building-a-smart-video-light/).
 
 Files:
 
