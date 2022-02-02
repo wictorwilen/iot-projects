@@ -1,0 +1,88 @@
+substitutions:
+  <<: !include secrets.yaml
+  name: "videolight"
+  displayName: "Video Light"
+
+esphome:
+  name: ${name}
+  platform: ESP8266
+  board: esp12e
+
+ota:
+  password: ${apipassword}
+
+logger:
+
+api:
+  password: ${apipassword}
+                   
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "${name} IP Address"
+      icon: "mdi:wan"
+  - platform: version
+    name: "${name} ESPHome Version"
+    icon: "mdi:numeric"
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time    
+
+wifi:
+  ssid: ${WifiName}
+  password: ${WifiPassword}
+
+  ap:
+    ssid: "${name} Hotspot"
+    password: ${appassword}
+
+output:
+  - platform: esp8266_pwm
+    pin: GPIO05
+    frequency: 100 Hz
+    id: pwm_output_yellow
+  - platform: esp8266_pwm
+    pin: GPIO12
+    frequency: 100 Hz
+    id: pwm_output_white
+
+light:
+  - platform: monochromatic
+    output: pwm_output_yellow
+    name: "Yellow Light Switch"
+  - platform: monochromatic
+    output: pwm_output_white
+    name: "White Light Switch"   
+
+number:
+  - platform: template
+    name: White Light Intensity
+    min_value: 0
+    max_value: 100
+    initial_value: 100
+    step: 10
+    id: led_intensity_white
+    set_action:
+      then: 
+        - logger.log: "White intensity changed"
+        - output.turn_on: pwm_output_white
+        - output.set_level: 
+            id: pwm_output_white
+            level: !lambda |- 
+              return x/100;       
+  - platform: template
+    name: Yellow Light Intensity
+    min_value: 0
+    max_value: 100
+    initial_value: 100
+    step: 10
+    id: led_intensity_yellow
+    set_action:
+      then: 
+        - logger.log: "Yellow intensity changed"
+        - output.turn_on: pwm_output_yellow
+        - output.set_level: 
+            id: pwm_output_yellow
+            level: !lambda |- 
+              return x/100;                             

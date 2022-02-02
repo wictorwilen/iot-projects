@@ -1,2 +1,3 @@
-# iot-projects
-My misc IoT projects and experiments
+# Assorted IoT projects
+
+A sharing location for my IoT experiments
