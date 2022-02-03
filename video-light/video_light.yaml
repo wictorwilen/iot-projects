@@ -55,6 +55,27 @@ light:
     output: pwm_output_white
     name: "White Light Switch"   
 
+switch:
+  - platform: template
+    name: "Lights"
+    id: lights_switch
+    restore_state: true
+    optimistic: true
+    turn_on_action:
+      - output.turn_on: pwm_output_white       
+      - output.turn_on: pwm_output_yellow
+      - output.set_level: 
+          id: pwm_output_white
+          level: !lambda |-
+            return (id(led_light_intensity).state/100) * ((id(led_color_temperature).state - 3200)/2300);  
+      - output.set_level: 
+          id: pwm_output_yellow
+          level: !lambda |- 
+            return (id(led_light_intensity).state/100) * ( (5500 - id(led_color_temperature).state)/2300 );             
+    turn_off_action:
+      - output.turn_off: pwm_output_white 
+      - output.turn_off: pwm_output_yellow     
+
 number:
   - platform: template
     name: White Light Intensity
@@ -85,4 +106,60 @@ number:
         - output.set_level: 
             id: pwm_output_yellow
             level: !lambda |- 
-              return x/100;                             
+              return x/100;        
+  - platform: template
+    name: Light Temperature
+    min_value: 3200
+    max_value: 5500
+    initial_value: 3200
+    unit_of_measurement: K
+    step: 100
+    id: led_color_temperature
+    restore_value: true
+    optimistic: true
+    set_action:
+      then: 
+        - logger.log: "Light Temp changed"
+        - output.turn_on: pwm_output_yellow
+        - output.turn_on: pwm_output_white
+        - output.set_level: 
+            id: pwm_output_white
+            level: !lambda |- 
+              return (id(led_light_intensity).state/100) * ((x-3200)/2300);  
+        - output.set_level: 
+            id: pwm_output_yellow
+            level: !lambda |- 
+              return (id(led_light_intensity).state/100) * ((5500-x)/2300);                                                     
+  - platform: template
+    name: Light Brightness
+    min_value: 0
+    max_value: 100
+    initial_value: 100
+    unit_of_measurement: '%'
+    step: 10
+    id: led_light_intensity
+    restore_value: true
+    optimistic: true    
+    set_action:
+      then: 
+        - logger.log: "Light Intensity changed"
+        - if:
+            condition:
+              lambda: 'return x == 0;'
+            then:
+              - logger.log: "Turning off lights"
+              - output.turn_off: pwm_output_yellow
+              - output.turn_off: pwm_output_white
+            else:
+              - logger.log: "Turning on lights"
+              - output.turn_on: pwm_output_yellow
+              - output.turn_on: pwm_output_white
+              - output.set_level: 
+                  id: pwm_output_white
+                  level: !lambda |-
+                    return (x/100) * ((id(led_color_temperature).state - 3200)/2300);  
+              - output.set_level: 
+                  id: pwm_output_yellow
+                  level: !lambda |- 
+                    return (x/100) * ( (5500 - id(led_color_temperature).state)/2300 );          
+                                        
