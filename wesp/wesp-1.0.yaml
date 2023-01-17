@@ -5,7 +5,7 @@ substitutions:
 esphome:
   name: "${name}"
   comment: WESP 1.0
-  name_add_mac_suffx: true
+  name_add_mac_suffix: true
   project:
     name: Wictor Wilén.WESP
     version: "1.0.0"
@@ -27,7 +27,7 @@ logger:
   level: debug
 
 dashboard_import: 
-  package_import_url: github://wictorwilen.se/iot-projects/wesp/wesp-1.0.yaml@main
+  package_import_url: github://wictorwilen/iot-projects/wesp/wesp-1.0.yaml@main
   import_full_config: false
 
 
