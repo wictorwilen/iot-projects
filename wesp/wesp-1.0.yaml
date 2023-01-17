@@ -1,0 +1,148 @@
+substitutions:
+  name: wesp
+  friendly_name: "WESP"
+
+esphome:
+  name: "${name}"
+  comment: WESP 1.0
+  name_add_mac_suffx: true
+  project:
+    name: Wictor Wilén.WESP
+    version: "1.0.0"
+
+esp32:
+  board: esp32-c3-devkitm-1
+
+
+wifi:
+  ap: {}
+
+ota:
+
+captive_portal:
+
+debug:
+
+logger:
+  level: debug
+
+dashboard_import: 
+  package_import_url: github://wictorwilen.se/iot-projects/wesp/wesp-1.0.yaml@main
+  import_full_config: false
+
+
+# Enable Home Assistant API
+api:
+
+i2c:
+  sda: GPIO07
+  scl: GPIO06
+
+sensor:
+  - platform: sht3xd
+    temperature:  
+      name: "${friendly_name} Temperature"
+      # filters:
+      #   - calibrate_linear:
+      #       - 0.0 -> 0.0
+      #       - 20.8 -> 17.5
+      #       - 24.4 -> 20.0
+      on_value_range:
+        - below: 0
+          then:
+            - light.turn_on:
+                id: rgbled
+                brightness: 100%
+                red: 0%
+                green: 0%
+                blue: 100%
+        - above: 0
+          then:
+            - light.turn_on:
+                id: rgbled
+                brightness: 100%
+                red: 0%
+                green: 25%
+                blue: 75%                
+        - above: 10
+          then:
+            - light.turn_on:
+                id: rgbled
+                brightness: 100%
+                red: 0%
+                green: 50%
+                blue: 50%
+        - above: 18
+          then:
+            - light.turn_on:
+                id: rgbled
+                brightness: 100%
+                red: 0%
+                green: 75%
+                blue: 25%                
+        - above: 20
+          then:
+            - light.turn_on:
+                id: rgbled
+                brightness: 100%
+                red: 0%
+                green: 100%
+                blue: 0%
+        - above: 22
+          then:
+            - light.turn_on:
+                id: rgbled
+                brightness: 100%
+                red: 25%
+                green: 75%
+                blue: 0%                
+        - above: 25
+          then:
+            - light.turn_on:
+                id: rgbled
+                brightness: 100%
+                red: 50%
+                green: 50%
+                blue: 0%
+        - above: 30
+          then:
+            - light.turn_on:
+                id: rgbled
+                brightness: 100%
+                red: 100%
+                green: 0%
+                blue: 0%
+    humidity:
+      name: "${friendly_name} Humidity"
+    address: 0x44
+    update_interval: 60s
+
+light:
+  - platform: binary
+    name: "${friendly_name} Status LED"
+    output: light_output
+    entity_category: config
+  - platform: neopixelbus
+    id: rgbled
+    type: GRB
+    variant: SK6812
+    pin: GPIO19
+    num_leds: 1
+    name: "${friendly_name} Light"
+
+output:
+  - id: light_output
+    platform: gpio
+    pin: GPIO018
+    inverted: true
+
+button:
+  - platform: restart
+    name: "${friendly_name} Restart"
+    entity_category: config
+  - platform: safe_mode
+    name: "${friendly_name} Restart (Safe Mode)"
+    entity_category: config
+  - platform: factory_reset
+    name: "${friendly_name} Factory Reset"
+    entity_category: config
